@@ -14,7 +14,7 @@ MAILBOX_DELIMITER = '^From .*\d\d \d\d\d\d$'
 def parse_mailbox(filename, encoding='utf-8', headersonly=False):
     """ Parse a gzipped files with multiple concatenaged emails
     that can be found in a mailbox
-    
+
     Parameters
     ----------
     filename : str
@@ -44,11 +44,10 @@ def parse_mailbox(filename, encoding='utf-8', headersonly=False):
     else:
         fopen = open
 
-
     with fopen(filename, 'rb') as fh:
         for idx, line in enumerate(fh):
             line = line.decode(encoding)
-            #if line.startswith('From ') and '@' in line:
+            # if line.startswith('From ') and '@' in line:
             if re.match(MAILBOX_DELIMITER, line):
                 if container:
                     mailbox.append(''.join(container))
@@ -58,7 +57,7 @@ def parse_mailbox(filename, encoding='utf-8', headersonly=False):
         if container:
             mailbox.append(''.join(container))
     out = []
-    for message in mailbox: 
+    for message in mailbox:
         if sys.version_info < (3, 0) and encoding != 'utf-8':
             message = message.encode('utf-8')
         msg_obj = Parser().parsestr(message, headersonly=headersonly)
@@ -100,11 +99,10 @@ def parse_mailman_htmlthread(filename):
 
     elements = filter(lambda x: x.tag == 'ul', tree.find('body'))
 
-    tree = list(elements)[-1].getchildren() # pick last <ul> element
+    tree = list(elements)[-1].getchildren()  # pick last <ul> element
 
     def create_thread(root, parent_container=None):
         """ Parse the html nested lists to produce the threading structure"""
-        #print(dir(root))
         if root.tag != 'li':
             raise ValueError('Element {} was not expected'.format(root))
 
@@ -138,7 +136,7 @@ def parse_mailman_htmlthread(filename):
 
 # Not used or extensively tested, comment out for now
 #
-#def flatten_tree(containers):
+# def flatten_tree(containers):
 #    """ Flatten a tree structure
 #
 #    Parameters
@@ -168,7 +166,8 @@ def parse_mailman_htmlthread(filename):
 #            root_container.children[0].message is not None:
 #            root_message_idx = root_container.children[0].message.message_idx
 #        else:
-#            raise ValueError('Container {} has a None root and None first children.',
+#            raise ValueError('Container {} has a None'
+#                             'root and None first children.',
 #                   '\nThis should not be happening')
 #
 #        for cont in root_container.flatten():

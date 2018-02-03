@@ -8,8 +8,7 @@ from __future__ import unicode_literals
 import os
 from unittest import SkipTest
 
-from jwzthreading import (Message, thread, print_container,
-                          sort_threads)
+from jwzthreading import (Message, thread, sort_threads)
 from jwzthreading.utils import (parse_mailbox,
                                 parse_mailman_htmlthread,
                                 MAILBOX_DELIMITER)
@@ -30,10 +29,11 @@ def test_parse_mailbox():
 
     assert len(msglist) == N_EMAILS_JUNE2010
 
+
 def test_parse_mailman_htmlthread():
     """ Test that we can parse mailman html thread """
     try:
-        import lxml
+        import lxml  # noqa
     except ImportError:
         raise SkipTest
     threads = parse_mailman_htmlthread(os.path.join(DATA_DIR,
@@ -56,7 +56,7 @@ def test_threading_fedora_June2010():
     from June 2010"""
 
     try:
-        import lxml
+        import lxml  # noqa
     except ImportError:
         raise SkipTest
 
@@ -106,7 +106,7 @@ def test_threading_fedora_June2010():
             subject = container['message'].subject
             message_idx = container['message'].message_idx
         else:
-            subject = None
+            subject = None   # noqa
             message_idx = None
 
         assert container_ref['message'].message_idx == message_idx
@@ -120,10 +120,13 @@ def test_threading_fedora_June2010():
 
         # check that we have the same messages in threads
         if NUMPY_PRESENT:
-            assert_array_equal([el['message'].message_idx for el in container_ref.flatten()],
-                         [el['message'].message_idx for el in container.flatten()])
-            assert_array_equal([el.current_depth for el in container_ref.flatten()],
-                         np.fmin([el.current_depth for el in container.flatten()], MAILMAN_MAX_DEPTH))
+            assert_array_equal(
+                [el['message'].message_idx for el in container_ref.flatten()],
+                [el['message'].message_idx for el in container.flatten()])
+            assert_array_equal(
+                [el.current_depth for el in container_ref.flatten()],
+                np.fmin([el.current_depth for el in container.flatten()],
+                        MAILMAN_MAX_DEPTH))
 
 
 def test_empty_collapsing_fedora_June2010():
@@ -131,16 +134,9 @@ def test_empty_collapsing_fedora_June2010():
     from June 2010"""
 
     try:
-        import lxml
+        import lxml  # noqa
     except ImportError:
         raise SkipTest
-
-    try:
-        import numpy as np
-        from numpy.testing import assert_array_equal
-        NUMPY_PRESENT = True
-    except ImportError:
-        NUMPY_PRESENT = False
 
     msglist = parse_mailbox(os.path.join(DATA_DIR, '2010-January.txt.gz'),
                             encoding='latin1', headersonly=True)

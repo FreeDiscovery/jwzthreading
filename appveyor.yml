@@ -26,9 +26,7 @@ install:
   # create a conda virtual environement 
   - "cd C:\\projects\\jwzthreading"
   - "conda create -n jwz-env --yes pytest lxml python=%PYTHON_VERSION%"
-  - activate jwz-env
-  - python setup.py develop
+  - activate jwz-env && pip install -e .
 
 test_script:
-  - activate jwz-env # activate the virtualenv
-  - py.test -sv jwzthreading/tests/
+  - activate jwz-env && pytest  && cd examples/ && python example_thread_fedora_mailing.py

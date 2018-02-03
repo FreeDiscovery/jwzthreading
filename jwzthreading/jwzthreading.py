@@ -301,7 +301,7 @@ class Message(object):
                     if subject_encoding == 'unknown-8bit':
                         try:
                             subject = subject.decode('utf-8')
-                        except:
+                        except:  # noqa
                             pass
 
                     else:
@@ -322,6 +322,7 @@ class Message(object):
 #
 # functions
 #
+
 
 def unique(alist):
     result = OrderedDict()
@@ -355,8 +356,9 @@ def prune_container(container):
     if container.get('message') is None and not len(container.children):
         # step 4 (a) - nuke empty containers
         return []
-    elif container.get('message') is None and (
-        len(container.children) == 1 or container.parent is not None):
+    elif (container.get('message') is None and
+          (len(container.children) == 1 or
+           container.parent is not None)):
         # step 4 (b) - promote children
         children = container.children[:]
         for child in children:
@@ -366,6 +368,7 @@ def prune_container(container):
         # Leave this node in place
         return [container]
 
+
 def sort_threads(threads, key='message_idx', missing=-1, reverse=False):
     """Sort threaded emails based on their root element
 
@@ -374,7 +377,7 @@ def sort_threads(threads, key='message_idx', missing=-1, reverse=False):
         group_by_subject (bool): Group root set by subject
                step 5 of the JWZ algorithm.
         key (str or None): optional sorting order for threads
-               Valid values are "message_id", "subject", "message_idx" 
+               Valid values are "message_id", "subject", "message_idx"
         missing (None): if the container has no message,
                replace it with this value
         reverse (book): reverse the order
@@ -435,35 +438,37 @@ def thread(messages, group_by_subject=True):
         # step one (b)
         prev = None
         for ref in msg.references:
-            ## print "Processing reference for "+repr(msg.message_id)+": "+repr(ref)
+            # print "Processing reference for
+            # "+repr(msg.message_id)+": "+repr(ref)
             container = id_table.get(ref, None)
             if container is None:
                 container = JwzContainer(message=None)
                 id_table[ref] = container
 
             if prev is not None:
-                #If they are already linked, don't change the existing links.
-                if container.parent != None:
+                # If they are already linked, don't change the existing links.
+                if container.parent is not None:
                     pass
                 # Don't add link if it would create a loop
-                elif container is this_container or \
-                     container.has_descendant(prev) or \
-                     prev.has_descendant(container):
+                elif (container is this_container or
+                      container.has_descendant(prev) or
+                      prev.has_descendant(container)):
                     pass
                 else:
                     prev.add_child(container)
 
             prev = container
-            ## print "Finished processing reference for "+repr(msg.message_id)+", container now: "
-            ## print_container(container, 0, True)
-        #1C
+            # print "Finished processing reference for
+            # "+repr(msg.message_id)+", container now: "
+            # print_container(container, 0, True)
+        # 1C
         if prev is not None:
-            ##print "Setting parent of "+repr(this_container)+", to last reference: " + repr (prev)
+            # print "Setting parent of "+repr(this_container)+",
+            # to last reference: " + repr (prev)
             prev.add_child(this_container)
         else:
             if(this_container.parent):
                 this_container.parent.remove_child(this_container)
-        
 
     # step two - find root set
     root_set = [container for container in id_table.values()
@@ -474,7 +479,7 @@ def thread(messages, group_by_subject=True):
 
     # step four - prune empty containers
     for container in root_set:
-        assert container.parent == None
+        assert container.parent is None
 
     new_root_set = []
     for container in root_set:
@@ -509,9 +514,9 @@ def thread(messages, group_by_subject=True):
              container.get('message') is None) or
             (existing.message is not None and
              container.get('message') is not None and
-             len(existing.message.subject) > len(container['message'].subject))):
+             (len(existing.message.subject)
+                 > len(container['message'].subject)))):
             subject_table[subj] = container
-
 
     # step five (c)
     for container in root_set:
@@ -553,7 +558,8 @@ def print_container(ctr, depth=0, debug=0):
     """Print summary of Thread to stdout."""
     if 'message' in ctr:
         if debug:
-            message = repr(ctr) + ' ' + repr(ctr['message'] and ctr['message'].subject)
+            message = (repr(ctr) + ' '
+                       + repr(ctr['message'] and ctr['message'].subject))
         else:
             message = str(ctr['message'] and ctr['message'].subject)
     else:
@@ -563,29 +569,3 @@ def print_container(ctr, depth=0, debug=0):
 
     for child in ctr.children:
         print_container(child, depth + 1, debug)
-
-
-def main():
-    import mailbox
-    import sys
-
-    msglist = []
-
-    print('Reading input file...')
-    mbox = mailbox.mbox(sys.argv[1])
-    for message in mbox:
-        try:
-            parsed_msg = Message(message)
-        except ValueError:
-            continue
-        msglist.append(parsed_msg)
-
-    print('Threading...')
-    threads = thread(msglist)
-
-    print('Output...')
-    for container in threads:
-        print_container(container)
-
-if __name__ == "__main__":
-    main()
